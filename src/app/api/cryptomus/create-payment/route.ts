@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     
     // Prepare invoice request
     const invoiceRequest: CreateInvoiceRequest = {
-      amount: formatAmount(parseFloat(body.amount)),
+      amount: formatAmount(typeof body.amount === 'string' ? parseFloat(body.amount) : body.amount),
       currency: body.currency,
       order_id: generateOrderId(),
       url_return: `${baseUrl}/payment`,
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       url_callback: `${baseUrl}/api/cryptomus/webhook`,
       is_payment_multiple: true,
       lifetime: 3600, // 1 hour
-      additional_data: body.description || null,
+      additional_data: body.description || undefined,
     };
 
     // Create invoice

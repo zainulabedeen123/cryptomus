@@ -143,10 +143,11 @@ export function createMockInvoice(request: CreateInvoiceRequest): Invoice {
     from: null,
     txid: null,
     payment_status: PaymentStatus.CHECK,
+    status: PaymentStatus.CHECK,
     url: `${process.env.NEXT_PUBLIC_APP_URL}/simulate/payment/${uuid}`,
     expired_at: expiredAt,
     is_final: false,
-    additional_data: request.additional_data,
+    additional_data: request.additional_data || null,
     created_at: now.toISOString(),
     updated_at: now.toISOString()
   };
@@ -163,7 +164,7 @@ export function simulatePaymentUpdate(invoice: Invoice, status: PaymentStatus): 
   if (status === PaymentStatus.PAID || status === PaymentStatus.PAID_OVER) {
     updatedInvoice.payment_amount = updatedInvoice.payer_amount;
     updatedInvoice.txid = generateMockTxHash();
-    updatedInvoice.from = getMockAddress(updatedInvoice.payer_currency);
+    updatedInvoice.from = getMockAddress(updatedInvoice.payer_currency || 'BTC');
     updatedInvoice.is_final = true;
   } else if (status === PaymentStatus.FAIL || status === PaymentStatus.CANCEL) {
     updatedInvoice.is_final = true;
@@ -177,27 +178,23 @@ export function simulatePaymentUpdate(invoice: Invoice, status: PaymentStatus): 
  */
 export function createMockWebhook(invoice: Invoice): WebhookPayload {
   return {
+    type: 'payment',
     uuid: invoice.uuid,
     order_id: invoice.order_id,
     amount: invoice.amount,
-    payment_amount: invoice.payment_amount,
-    payer_amount: invoice.payer_amount,
-    discount_percent: invoice.discount_percent,
-    discount: invoice.discount,
-    payer_currency: invoice.payer_currency,
-    currency: invoice.currency,
-    merchant_amount: invoice.merchant_amount,
-    network: invoice.network,
-    address: invoice.address,
-    from: invoice.from,
-    txid: invoice.txid,
-    payment_status: invoice.payment_status,
-    url: invoice.url,
-    expired_at: invoice.expired_at,
+    payment_amount: invoice.payment_amount || '0',
+    payment_amount_usd: '0',
+    merchant_amount: invoice.merchant_amount || '0',
+    commission: '0',
     is_final: invoice.is_final,
+    status: invoice.payment_status,
+    from: invoice.from || '',
+    wallet_address_uuid: null,
+    network: invoice.network || 'mainnet',
+    currency: invoice.currency,
+    payer_currency: invoice.payer_currency || 'BTC',
     additional_data: invoice.additional_data,
-    created_at: invoice.created_at,
-    updated_at: invoice.updated_at
+    sign: 'mock-signature'
   };
 }
 
